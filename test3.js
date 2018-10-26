@@ -16,7 +16,7 @@ function injectEvents(events) {
   exec('adb forward tcp:1080 tcp:1080\n', () => {
     client.connect(PORT, HOST, () => {
       console.log('connected to : ' + HOST + ' ' + PORT);
-      for (var i = 0; i < 3; i++) {
+      for (var i = 0; i < 1; i++) {
         events.forEach((item) => {
           adbexec(item)
         })
