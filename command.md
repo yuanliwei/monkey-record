@@ -12,3 +12,5 @@ wake
 flip [open|close]
 trackball dx dy
 touch [down|up|move] keycode
+
+adb shell getevent -l -t > events.txt

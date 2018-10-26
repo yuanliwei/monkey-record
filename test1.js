@@ -17,22 +17,23 @@ touch [down|up] keycode
 */
 
 const net = require('net');
-const { execSync } = require('child_process');
+const exec = require('child_process').exec;
 
 let HOST = '127.0.0.1'
 let PORT = 1080
 
-execSync('adb shell monkey --port 1080\n')
-execSync('adb forward tcp:1080 tcp:1080\n')
+exec('adb shell monkey --port 1080\n')
 let client = new net.Socket()
-client.connect(PORT, HOST, ()=>{
-  console.log('connected to : ' + HOST+' '+PORT);
-  for (var i = 0; i < 30; i++) {
-    down(155, 234)
-    up(555, 234)
-    sleep(500)
-  }
-  adbexec('quit')
+exec('adb forward tcp:1080 tcp:1080\n', ()=>{
+  client.connect(PORT, HOST, ()=>{
+    console.log('connected to : ' + HOST+' '+PORT);
+    for (var i = 0; i < 30; i++) {
+      down(155, 234)
+      up(555, 234)
+      sleep(500)
+    }
+    adbexec('quit')
+  })
 })
 client.on('data', (data)=>{
   console.log('DATA:'+data);
