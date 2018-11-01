@@ -13,9 +13,9 @@ adb shell getevent -l -t > events.txt
 
 */
 
-function getContent() {
+function getContent(file) {
   const fs = require('fs');
-  return fs.readFileSync('C:/Users/y/Desktop/events.txt', 'UTF-16LE')
+  return fs.readFileSync(file, 'UTF-16LE')
 }
 
 function getEvents(content) {
@@ -58,19 +58,21 @@ function parseEvents(events) {
 function groupEvents(events) {
   let arr = []
   let pack = []
+  let lastTime = 0
+  arr.push(pack)
   for (var i = 0; i < events.length; i++) {
     let e = events[i]
-    if (e[3] == 'EV_SYN' && e[4] == 'SYN_REPORT') {
-      arr.push(pack)
-      pack = []
-    } else {
-      pack.push(e)
+    if (lastTime == 0) {
+      lastTime = e[1]
     }
+    if (lastTime != e[1]) {
+      lastTime = e[1]
+      pack = []
+      arr.push(pack)
+    }
+    pack.push(e)
   }
   console.log('pack.length : '+pack.length);
-  if (pack.length > 0) {
-    arr.push(pack)
-  }
   return arr
 }
 
@@ -120,21 +122,27 @@ function toCommands(evts) {
       ABS_MT_POSITION_Y
       ABS_MT_TOUCH_MAJOR
       ABS_MT_PRESSURE
+      SYN_REPORT
       -
       ABS_MT_POSITION_X
       ABS_MT_POSITION_Y
+      SYN_REPORT
       -
       ABS_MT_POSITION_X
+      SYN_REPORT
       -
       ABS_MT_POSITION_Y
+      SYN_REPORT
       -
       ABS_MT_POSITION_Y
       ABS_MT_TOUCH_MAJOR
       ABS_MT_PRESSURE
+      SYN_REPORT
       -
       ABS_MT_POSITION_X
       ABS_MT_TOUCH_MAJOR
       ABS_MT_PRESSURE
+      SYN_REPORT
       `)) {
       if (dt) { cmds.push(`sleep ${dt}`) }
       cmds.push(`touch move ${x} ${y}`)
@@ -150,20 +158,24 @@ function toCommands(evts) {
       ABS_MT_POSITION_Y
       ABS_MT_TOUCH_MAJOR
       ABS_MT_PRESSURE
+      SYN_REPORT
       -
       ABS_MT_TRACKING_ID
       BTN_TOUCH
       BTN_TOOL_FINGER
+      SYN_REPORT
       -
       BTN_TOUCH
       BTN_TOOL_FINGER
       ABS_MT_TRACKING_ID
+      SYN_REPORT
       -
       BTN_TOUCH
       BTN_TOOL_FINGER
       ABS_MT_TRACKING_ID
       ABS_MT_POSITION_X
       ABS_MT_POSITION_Y
+      SYN_REPORT
       `)) {
         let i = 1
         while (e[4] != 'BTN_TOUCH') { e = pack[i++] }
@@ -221,12 +233,34 @@ function start() {
   // console.log(events.join('\n'));
 }
 
-function getCommands() {
-  let content = getContent()
+function zipCommands(events) {
+  let cmds = []
+  for (var i = 0; i < events.length; i++) {
+    let e = events[i]
+    if (e.startsWith('touch down')) {
+      if (events[i+2]&&events[i+2].startsWith('touch up')) {
+        let pos1 = e.replace('touch down','')
+        let time = parseInt(events[i+1].replace('sleep',''))
+        let pos2 = events[i+2].replace('touch up','')
+        if (pos1 == pos2 && time < 100) {
+          cmds.push(`tap ${pos1}`)
+          i+=2
+          continue
+        }
+      }
+    }
+    cmds.push(e)
+  }
+  return cmds
+}
+
+function getCommands(file) {
+  let content = getContent(file)
   let events = getEvents(content)
   events = parseEvents(events)
   events = groupEvents(events)
   events = toCommands(events)
+  events = zipCommands(events)
   return events
 }
 
