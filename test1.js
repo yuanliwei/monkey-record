@@ -37,12 +37,6 @@ exec('adb forward tcp:1080 tcp:1080\n', ()=>{
     adbexec('quit')
   })
 })
-client.on('data', (data)=>{
-  console.log('DATA:'+data);
-})
-client.on('close',()=>{
-  console.log('connection closed!');
-})
 
 function tap(x, y) {
   client.write(`tap ${parseInt(x)} ${parseInt(y)}\n`)
