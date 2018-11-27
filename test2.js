@@ -1,7 +1,8 @@
 
 function start() {
-  // adb shell getevent -l -t > events.txt
-  let file = 'C:/Users/y/Desktop/events.txt'
+  // adb shell getevent -l -t > .git/events.txt
+  const path = require('path');
+  let file = path.join(__dirname, '.git/events.txt')
   const ParseCommand = require('./ParseCommand');
   let events = ParseCommand.getCommands(file)
   console.log(events.join('\n'));
