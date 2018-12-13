@@ -29,9 +29,10 @@ exec('adb shell monkey --port 1080\n')
 exec('adb forward tcp:1080 tcp:1080\n', ()=>{
   connect(()=>{
     for (var i = 0; i < 30; i++) {
-      down(155, 234)
-      move(555, 234)
-      up(555, 234)
+      down(400, 1530)
+      // move(555, 234)
+      sleep(3500)
+      up(400, 1530)
       sleep(500)
     }
     adbexec('quit')
