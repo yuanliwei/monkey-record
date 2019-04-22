@@ -48,16 +48,16 @@ tap  1035 1427
 `
 
 function runCommands() {
-  while (LOOP_COUNT--) {
     cmds.split('\n').map((item) => {
-      return item.trim()
+        return item.trim()
     }).filter((item) => {
-      return item.length > 0 && !item.trim().startsWith('//')
+        return item.length > 0 && !item.trim().startsWith('//')
     }).forEach((item) => {
-      adbexec(item)
+        adbexec(item)
     })
-  }
 }
+
+/// Connect ///
 
 const net = require('net');
 const exec = require('child_process').exec;
@@ -67,39 +67,44 @@ let PORT = 1080
 let TIMER = 0
 let TRY_COUNT = 300
 let client = null
-let LOOP_COUNT = 100
 
 exec(`adb shell monkey --port ${PORT}\n`)
 exec(`adb forward tcp:${PORT} tcp:${PORT}\n`, () => {
-  connect(() => {
-    runCommands()
-    adbexec('quit')
-  })
+    connect(() => {
+        runCommands()
+        adbexec('quit')
+        setTimeout(() => {
+            process.exit(0)
+        }, 1000);
+    })
 })
 
 function adbexec(command) {
-  client.write(`${command}\n`)
+    client.write(`${command}\n`)
 }
 
 function connect(callback) {
-  client = new net.Socket()
-  client.connect(PORT, HOST, () => {
-    console.log('connected to : ' + HOST + ' ' + PORT);
-    callback()
-  })
-  client.on('data', (data) => {
-    // console.log('DATA:'+data);
-  })
-  client.on('close', () => {
-    console.log('connection closed!');
-  })
-  client.on('error', (data) => {
-    console.log('error:' + data);
-    console.log('TRY_COUNT : ' + TRY_COUNT);
-    if (TRY_COUNT-- < 0) { return }
-    clearTimeout(TIMER)
-    TIMER = setTimeout(() => {
-      connect(callback)
-    }, 300)
-  })
+    client = new net.Socket()
+    client.connect(PORT, HOST, () => {
+        console.log('connected to : ' + HOST + ' ' + PORT);
+        callback()
+    })
+    client.on('data', (data) => {
+        // console.log('DATA:'+data);
+    })
+    client.on('close', () => {
+        console.log('connection closed!');
+        console.log('TRY_COUNT : ' + TRY_COUNT);
+        adbexec('try')
+    })
+    client.on('error', (data) => {
+        console.log('error:' + data);
+        console.log('TRY_COUNT : ' + TRY_COUNT);
+        if (TRY_COUNT-- < 0) { return }
+        clearTimeout(TIMER)
+        TIMER = setTimeout(() => {
+            connect(callback)
+        }, 300)
+    })
 }
+

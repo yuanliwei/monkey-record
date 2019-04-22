@@ -28,12 +28,14 @@ let client = null
 exec('adb shell monkey --port 1080\n')
 exec('adb forward tcp:1080 tcp:1080\n', ()=>{
   connect(()=>{
-    for (var i = 0; i < 30; i++) {
-      down(400, 1530)
-      // move(555, 234)
-      sleep(3500)
-      up(400, 1530)
-      sleep(500)
+    for (var i = 0; i < 1800; i++) {
+      // down(400, 1530)
+      // // move(555, 234)
+      // sleep(3500)
+      // up(400, 1530)
+      type('I')
+      press('enter')
+      sleep(1)
     }
     adbexec('quit')
   })
@@ -41,6 +43,14 @@ exec('adb forward tcp:1080 tcp:1080\n', ()=>{
 
 function tap(x, y) {
   client.write(`tap ${parseInt(x)} ${parseInt(y)}\n`)
+}
+
+function type(string) {
+  client.write(`type ${string}\n`)
+}
+
+function press(keycode) {
+  client.write(`press ${keycode}\n`)
 }
 
 function down(x, y) {
